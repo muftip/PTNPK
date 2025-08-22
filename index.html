@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <!-- Favicon untuk judul website -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏢</text></svg>">
+    
+    <!-- Memanggil file Style.html menggunakan scriptlet Apps Script -->
+    <?!= include('Style'); ?>
+</head>
+<body>
+    <!-- Header dengan Navbar -->
+    <header>
+        <div class="navbar-container">
+            <div class="blog-brand">
+                <!-- Icon untuk judul website -->
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 19V3H2v16H0v2h24v-2h-2zm-10 0H4V5h8v14zm8 0h-6V5h6v14z"/></svg>
+                <h1>
+                    PT. Nusantara Project Konsultan
+                    <small>Kami melayani berbagai jasa dan konsultasi</small>
+                </h1>
+            </div>
+            <!-- Tombol untuk menambahkan postingan baru dan pengaturan tata letak di dalam navbar -->
+            <div class="navbar-actions">
+                <button id="add-post-btn" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus-circle"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                    Tambah Postingan
+                </button>
+                <button id="add-user-btn" class="admin-btn" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-plus"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                    Tambah Anggota User
+                </button>
+                <button id="edit-running-text-btn" class="admin-btn" style="display: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-edit"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    Edit Teks Berjalan
+                </button>
+                <button id="layout-toggle-btn" class="layout-toggle-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-panel-left"><rect width="7" height="18" x="3" y="3" rx="2" ry="2"/><rect width="10" height="18" x="11" y="3" rx="2" ry="2"/></svg>
+                    <span id="layout-btn-text">Ubah Tata Letak</span>
+                </button>
+                <button id="color-settings-btn" class="color-settings-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-palette"><circle cx="12" cy="12" r="10"/><path d="M12 6V4"/><path d="M12 20V18"/><path d="M6 12H4"/><path d="M20 12H18"/><path d="M9.4 15.6a6 6 0 0 0 5.2 0"/><path d="M15.6 9.4a6 6 0 0 0-5.2 0"/></svg>
+                    Pengaturan Warna
+                </button>
+                <button id="admin-login-btn" class="admin-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-cog"><circle cx="12" cy="7" r="4"/><path d="M12 15h.01"/><path d="M19 17v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><path d="M22 22l-1.5-1.5"/><path d="M21 13.5V10h-2.5L16 8.5 13.5 10H11v2.5L12.5 15 11 17.5V20h2.5L16 21.5 18.5 20H21v-2.5L22 15z"/></svg>
+                    <span>Administrator</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Bagian Slider Jenis-Jenis Jasa Kami -->
+    <section class="services-slider-container">
+        <!-- New: Date and Time Card -->
+        <div class="datetime-card">
+            <span id="current-date-time" class="date-text"></span>
+            <span id="current-time" class="time-text"></span>
+        </div>
+
+        <!-- New: Running Text Card -->
+        <div class="running-text-card">
+            <div id="running-text-content" class="running-text-content">
+                PT. Nusantara Project Konsultan | Melayani dengan Profesional dan Terpercaya | Kami Melayani Berbagai Jasa dan Konsultasi
+            </div>
+        </div>
+
+        <h2>
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M16 20h2a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2"/><path d="M12 16V8"/><path d="M12 20h-2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 20V4"/><path d="M15 20V4"/></svg>
+            Jenis-Jenis Jasa Kami
+        </h2>
+        <button class="slider-nav-btn prev" id="slider-prev-btn">&#10094;</button>
+        <div class="slider-track" id="services-slider-track">
+            <!-- Jasa Konsultasi Organisasi dan Kepemimpinan -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>
+                    Konsultasi Organisasi dan Kepemimpinan
+                </h3>
+                <ul>
+                    <li>Penyusunan AD/ART koperasi</li>
+                    <li>Pembentukan dan penguatan struktur organisasi</li>
+                    <li>Konsultasi legalitas dan badan hukum koperasi</li>
+                    <li>Fasilitasi Rapat Anggota Tahunan (RAT)</li>
+                    <li>Pelatihan kepemimpinan koperasi (pengurus & pengawas)</li>
+                    <li>Manajemen konflik internal koperasi</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Konsultasi Organisasi dan Kepemimpinan">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Konsultasi Keuangan dan Administrasi -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 6H8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2z"/><path d="M2 12V8a2 2 0 0 1 2-2h1.5a.5.5 0 0 0 0-1H4a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h1.5a.5.5 0 0 0 0-1H4a2 2 0 0 1-2-2z"/><path d="M12 12H8"/><path d="M16 16v-1.5a2.5 2.5 0 0 0-5 0V16"/></svg>
+                    Konsultasi Keuangan dan Administrasi
+                </h3>
+                <ul>
+                    <li>Pelatihan akuntansi koperasi</li>
+                    <li>Penyusunan laporan keuangan koperasi (bulanan/tahunan)</li>
+                    <li>Audit internal koperasi</li>
+                    <li>RAB dan rencana bisnis koperasi</li>
+                    <li>Konsultasi pengelolaan SHU dan simpan pinjam</li>
+                    <li>Optimalisasi pajak dan NPWP koperasi</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Konsultasi Keuangan dan Administrasi">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Digitalisasi dan Teknologi Informasi -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/><line x1="14" x2="10" y1="4" y2="20"/></svg>
+                    Digitalisasi dan Teknologi Informasi
+                </h3>
+                <ul>
+                    <li>Pembuatan sistem informasi koperasi (keuangan, inventaris, anggota)</li>
+                    <li>Desain aplikasi atau website koperasi</li>
+                    <li>Pelatihan digital literacy untuk pengurus dan anggota koperasi</li>
+                    <li>Integrasi sistem koperasi dengan database nasional (SIKOPDIT, dll.)</li>
+                    <li>Jasa desain dan branding digital</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Digitalisasi dan Teknologi Informasi">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Pemasaran dan Pengembangan Usaha -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    Pemasaran dan Pengembangan Usaha
+                </h3>
+                <ul>
+                    <li>Pengembangan model bisnis koperasi (canvas, lean startup)</li>
+                    <li>Konsultasi branding produk koperasi</li>
+                    <li>Riset pasar dan pengembangan produk</li>
+                    <li>Manajemen marketplace (Shopee, Tokopedia, TikTok Shop, dll.)</li>
+                    <li>Pelatihan pemasaran digital & media sosial</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Pemasaran dan Pengembangan Usaha">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Sektor Riil (untuk koperasi produksi dan pertanian) -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 21 2 22 8a7 7 0 0 1-7 7.9H11v4z"/><path d="M17 19c-1.29-0.06-2.64-0.15-3.8-0.2c-3.35-0.14-6.66-0.62-9.4-1.75c-2.96-1.22-3.8-3.15-2.7-5.5s3.5-3.5 6.4-4.2c2.9-0.7 7.5-1 10.9-0.25c-0.2 1.3-0.5 2.5-0.9 3.4c-1.34 3-4.2 4.6-8.9 4.8"/></svg>
+                    Jasa Sektor Riil
+                </h3>
+                <ul>
+                    <li>Konsultasi agroekologi atau pertanian regenerative</li>
+                    <li>Manajemen rantai pasok</li>
+                    <li>Pengolahan hasil pertanian dan pengemasan produk</li>
+                    <li>Perencanaan kawasan pangan koperasi</li>
+                    <li>Sertifikasi organik atau PIRT</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Jasa Sektor Riil">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Pendidikan dan Pemberdayaan -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/><path d="M18 5.5H6.5A2.5 2.5 0 0 0 4 8v11.5"/></svg>
+                    Pendidikan dan Pemberdayaan
+                </h3>
+                <ul>
+                    <li>Fasilitasi Sekolah Koperasi</li>
+                    <li>Pelatihan kader koperasi muda</li>
+                    <li>Workshop kesadaran kritis & literasi koperasi</li>
+                    <li>Produksi modul pelatihan & materi edukasi koperasi</li>
+                    <li>Pelatihan gender dan keadilan sosial dalam koperasi</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Pendidikan dan Pemberdayaan">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Riset dan Pengembangan -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+                    Riset dan Pengembangan
+                </h3>
+                <ul>
+                    <li>Studi kelayakan unit usaha koperasi</li>
+                    <li>Survey anggota dan kebutuhan komunitas</li>
+                    <li>Riset dampak sosial koperasi</li>
+                    <li>Monitoring dan evaluasi program koperasi</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Riset dan Pengembangan">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Advokasi dan Hukum -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 21H3V8h18V13"/><path d="M3 4V2h18v2"/><path d="M9 20V16H3v4"/><path d="M15 20V16h-6v4"/><path d="M21 20V16h-6v4"/><path d="M16 11l4 4-4 4"/></svg>
+                    Advokasi dan Hukum
+                </h3>
+                <ul>
+                    <li>Pendampingan hukum koperasi dalam konflik usaha atau anggota</li>
+                    <li>Konsultasi perizinan dan hukum perdata koperasi</li>
+                    <li>Advokasi koperasi terhadap regulasi dan kebijakan daerah</li>
+                    <li>Pelatihan paralegal koperasi</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Advokasi dan Hukum">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+
+            <!-- Jasa Kreatif dan Dokumentasi -->
+            <div class="slider-card">
+                <h3>
+                    <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.5 4H10l-3 6L2 15v5a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7.5L14.5 4z"/></svg>
+                    Kreatif dan Dokumentasi
+                </h3>
+                <ul>
+                    <li>Dokumentasi RAT dan kegiatan koperasi (video/foto)</li>
+                    <li>Produksi media promosi koperasi</li>
+                    <li>Pembuatan profil video koperasi</li>
+                    <li>Desain grafis laporan tahunan koperasi</li>
+                </ul>
+                <button class="whatsapp-btn" data-service-name="Kreatif dan Dokumentasi">
+                    <svg class="icon" viewBox="0 0 24 24">
+                        <path d="M12.04 2.03c-5.47 0-9.91 4.44-9.91 9.91 0 1.75.46 3.45 1.32 4.95l-1.4 5.16 5.3-1.38c1.45.79 3.08 1.21 4.69 1.21 5.47 0 9.91-4.44 9.91-9.91s-4.44-9.91-9.91-9.91zm0 18.12c-1.47 0-2.93-.39-4.19-1.14l-.3-.18-3.15.82.84-3.08-.2-.32c-.82-1.32-1.25-2.85-1.25-4.47 0-4.54 3.7-8.24 8.24-8.24s8.24 3.7 8.24 8.24-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.13-.92-.46-1.06-.52-.15-.06-.25-.09-.36.09-.1.18-.39.52-.48.62-.1.1-.19.1-.35.05-.15-.06-1.06-.39-2.02-1.25-.75-.66-1.25-1.48-1.4-1.73-.15-.25-.02-.38.08-.48.09-.1.2-.25.3-.39.1-.15.05-.28-.02-.39-.06-.1-.36-.92-.49-1.22-.12-.3-.25-.25-.36-.25h-.35c-.1 0-.25.04-.39.18-.15.15-.58.58-.58 1.42 0 .84.6 1.64.69 1.76.09.13 1.15 1.76 2.79 2.45 1.64.69 1.64.46 1.94.41.3-.05.92-.38 1.05-.73.13-.35.13-.65.09-.73-.05-.09-.15-.13-.25-.18z"/>
+                    </svg>
+                    Hubungi Kami
+                </button>
+            </div>
+        </div>
+        <button class="slider-nav-btn next" id="slider-next-btn">&#10095;</button>
+    </section>
+
+    <!-- Konten Utama Blog -->
+    <main>
+        <!-- Bagian untuk menampilkan postingan blog -->
+        <section id="posts-section" class="layout-standard">
+            <!-- Postingan blog akan ditambahkan di sini secara dinamis oleh JavaScript -->
+        </section>
+        
+        <!-- Sidebar dengan informasi tambahan -->
+        <aside class="layout-standard">
+            <h2>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Tentang Saya
+            </h2>
+            <p>Selamat datang di blog saya! Saya senang berbagi pengetahuan dan pengalaman saya di sini.</p>
+            
+            <h2>
+                <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 6H3"/><path d="M21 12H3"/><path d="M21 18H3"/></svg>
+                Kategori
+            </h2>
+            <ul id="category-list">
+                <!-- Kategori akan ditambahkan di sini secara dinamis oleh JavaScript -->
+            </ul>
+        </aside>
+    </main>
+
+    <!-- Modal untuk menampilkan postingan lengkap -->
+    <div id="post-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- Kartu tanggal di dalam modal header -->
+                <div class="post-date-card modal-date-card">
+                    <span class="day" id="modal-date-day"></span>
+                    <span class="month-year" id="modal-date-month-year"></span>
+                </div>
+                <h3 id="modal-post-title"></h3>
+                <button class="modal-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-post-content"></p>
+                <div id="modal-post-meta" class="modal-meta"></div>
+                <div id="modal-post-category" class="modal-meta"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Formulir Tambah Postingan -->
+    <div id="add-post-modal-overlay" class="modal-overlay">
+        <div id="add-post-modal-content" class="modal-content">
+            <div class="modal-header">
+                <h2 id="post-form-title">Buat Postingan Baru</h2>
+                <button class="modal-close-btn add-post-modal-close-btn">&times;</button>
+            </div>
+            <form id="post-form">
+                <label for="post-title">Judul Postingan:</label>
+                <input type="text" id="post-title" required>
+                
+                <label for="post-date">Tanggal Publikasi:</label>
+                <input type="date" id="post-date">
+
+                <label for="post-category">Kategori:</label>
+                <input type="text" id="post-category" placeholder="Contoh: Teknologi, Gaya Hidup">
+
+                <label for="post-content">Konten Postingan:</label>
+                <textarea id="post-content" required></textarea>
+                
+                <button type="submit" id="post-form-submit-btn">Publikasikan Postingan</button>
+            </form>
+            <div id="post-form-message" style="color: red; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Login Administrator -->
+    <div id="login-modal-overlay" class="modal-overlay">
+        <div id="login-modal-content" class="modal-content">
+            <div class="modal-header">
+                <h2>Login Administrator</h2>
+                <button class="modal-close-btn login-modal-close-btn">&times;</button>
+            </div>
+            <form id="login-form">
+                <label for="login-username">Username:</label>
+                <input type="text" id="login-username" required>
+                
+                <label for="login-password">Password:</label>
+                <input type="password" id="login-password" required>
+                
+                <button type="submit">Login</button>
+            </form>
+            <div id="login-message" style="color: red; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Tambah Anggota User (Admin Only) -->
+    <div id="add-user-modal-overlay" class="modal-overlay">
+        <div id="add-user-modal-content" class="modal-content">
+            <div class="modal-header">
+                <h2>Tambah Anggota User Baru</h2>
+                <button class="modal-close-btn add-user-modal-close-btn">&times;</button>
+            </div>
+            <form id="add-user-form">
+                <label for="new-username">Username Baru:</label>
+                <input type="text" id="new-username" required>
+                
+                <label for="new-password">Password Baru:</label>
+                <input type="password" id="new-password" required>
+                
+                <button type="submit">Daftarkan User</button>
+            </form>
+            <div id="add-user-message" style="color: green; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Edit Teks Berjalan (Admin Only) -->
+    <div id="edit-running-text-modal-overlay" class="modal-overlay">
+        <div id="edit-running-text-modal-content" class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Teks Berjalan</h2>
+                <button class="modal-close-btn edit-running-text-modal-close-btn">&times;</button>
+            </div>
+            <form id="edit-running-text-form">
+                <label for="running-text-input">Konten Teks Berjalan:</label>
+                <textarea id="running-text-input" rows="5" required></textarea>
+                <button type="submit">Simpan Teks Berjalan</button>
+            </form>
+            <div id="edit-running-text-message" style="color: green; margin-top: 10px; text-align: center;"></div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Pengaturan Warna -->
+    <div id="color-settings-modal-overlay" class="modal-overlay">
+        <div id="color-settings-modal-content" class="modal-content">
+            <div class="modal-header">
+                <h2>Pengaturan Warna Website</h2>
+                <button class="modal-close-btn color-settings-modal-close-btn">&times;</button>
+            </div>
+            <div class="theme-options">
+                <button class="theme-button default-theme" data-theme="default">Tema Default</button>
+                <button class="theme-button dark-theme" data-theme="dark">Tema Gelap</button>
+                <button class="theme-button green-theme" data-theme="green">Tema Hijau</button>
+                <button class="theme-button purple-theme" data-theme="purple">Tema Ungu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer Blog -->
+    <footer>
+        <p>&copy; 2025 PT. Nusantara Project Konsultan. Hak Cipta Dilindungi.</p>
+    </footer>
+
+    <!-- Memanggil file Script.html menggunakan scriptlet Apps Script -->
+    <?!= include('Script'); ?>
+</body>
+</html>
