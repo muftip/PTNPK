@@ -1448,6 +1448,804 @@
     </footer>
 
     <!-- Memanggil file Script.html menggunakan scriptlet Apps Script -->
-    <?!= include('Script'); ?>
+    <script>
+    // --- Modal Control Functions (GLOBAL) ---
+    // Moved to global scope to ensure accessibility for all event listeners
+    function showModal(overlayElement) {
+        console.log(`Showing modal: ${overlayElement.id}`);
+        overlayElement.style.display = 'flex'; // Make it visible immediately for layout
+        // Use requestAnimationFrame to ensure display change is rendered before adding active class
+        requestAnimationFrame(() => {
+            overlayElement.classList.add('active');
+        });
+        document.body.style.overflow = 'hidden'; // Disable body scroll
+    }
+
+    function hideModal(overlayElement) {
+        console.log(`Hiding modal: ${overlayElement.id}`);
+        overlayElement.classList.remove('active');
+        // Listen for the end of the transition before setting display to none
+        const onTransitionEnd = () => {
+            overlayElement.style.display = 'none';
+            document.body.style.overflow = ''; // Re-enable body scroll
+            overlayElement.removeEventListener('transitionend', onTransitionEnd);
+        };
+        overlayElement.addEventListener('transitionend', onTransitionEnd);
+    }
+
+    // Function to show login modal (GLOBAL)
+    function showLoginModal() {
+        console.log('Attempting to show login modal.');
+        const loginModalOverlay = document.getElementById('login-modal-overlay');
+        const loginMessage = document.getElementById('login-message');
+        const loginForm = document.getElementById('login-form');
+
+        showModal(loginModalOverlay);
+        loginMessage.textContent = ''; // Clear previous messages
+        loginForm.reset(); // Clear form fields
+    }
+
+    // Function to show a temporary message box
+    function showMessageBox(message, type = 'info') {
+        const box = document.createElement('div');
+        box.textContent = message;
+        box.style.position = 'fixed';
+        box.style.top = '20px';
+        box.style.right = '20px';
+        box.style.padding = '15px 25px';
+        box.style.borderRadius = '8px';
+        box.style.color = 'white';
+        box.style.zIndex = '9999';
+        box.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
+        box.style.opacity = '0';
+        box.style.transition = 'opacity 0.3s ease';
+
+        if (type === 'success') {
+            box.style.backgroundColor = '#28a745';
+        } else if (type === 'error') {
+            box.style.backgroundColor = '#dc3545';
+        } else {
+            box.style.backgroundColor = '#17a2b8';
+        }
+
+        document.body.appendChild(box);
+
+        // Fade in
+        requestAnimationFrame(() => {
+            box.style.opacity = '1';
+        });
+
+        // Fade out and remove after 3 seconds
+        setTimeout(() => {
+            box.style.opacity = '0';
+            box.addEventListener('transitionend', () => {
+                box.remove();
+            });
+        }, 3000);
+    }
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log('DOM Content Loaded - Script is running.'); // Log to confirm script execution
+        try {
+            const postsContainer = document.getElementById('posts-section');
+            const asideSection = document.querySelector('aside');
+            const addPostBtn = document.getElementById('add-post-btn');
+            const addUserBtn = document.getElementById('add-user-btn');
+            const editRunningTextBtn = document.getElementById('edit-running-text-btn'); // New button
+            const postForm = document.getElementById('post-form');
+            const postFormTitle = document.getElementById('post-form-title'); // New element
+            const postFormSubmitBtn = document.getElementById('post-form-submit-btn'); // New element
+            const postFormMessage = document.getElementById('post-form-message'); // New element
+            const postTitleInput = document.getElementById('post-title');
+            const postDateInput = document.getElementById('post-date');
+            const postCategoryInput = document.getElementById('post-category');
+            const postContentInput = document.getElementById('post-content');
+            const layoutToggleButton = document.getElementById('layout-toggle-btn');
+            const layoutBtnText = document.getElementById('layout-btn-text');
+            const colorSettingsBtn = document.getElementById('color-settings-btn');
+            const adminLoginBtn = document.getElementById('admin-login-btn');
+            const adminLoginBtnText = adminLoginBtn.querySelector('span');
+            const categoryList = document.getElementById('category-list');
+            
+            // Slider elements
+            const servicesSliderTrack = document.getElementById('services-slider-track');
+            const sliderPrevBtn = document.getElementById('slider-prev-btn');
+            const sliderNextBtn = document.getElementById('slider-next-btn');
+            let slideInterval;
+
+            // Date and Time elements
+            const currentDateTimeSpan = document.getElementById('current-date-time');
+            const currentTimeSpan = document.getElementById('current-time');
+
+            // Running Text elements
+            const runningTextContentElement = document.getElementById('running-text-content');
+            const editRunningTextModalOverlay = document.getElementById('edit-running-text-modal-overlay');
+            const editRunningTextModalCloseBtn = document.querySelector('.edit-running-text-modal-close-btn');
+            const editRunningTextForm = document.getElementById('edit-running-text-form');
+            const runningTextInput = document.getElementById('running-text-input');
+            const editRunningTextMessage = document.getElementById('edit-running-text-message');
+
+            // Modal elements (for displaying full post)
+            const postModal = document.getElementById('post-modal');
+            const modalPostTitle = document.getElementById('modal-post-title');
+            const modalPostContent = document.getElementById('modal-post-content');
+            const modalPostMeta = document.getElementById('modal-post-meta');
+            const modalPostCategory = document.getElementById('modal-post-category');
+            const postModalCloseBtn = postModal.querySelector('.modal-close-btn');
+            const modalDateDay = document.getElementById('modal-date-day');
+            const modalDateMonthYear = document.getElementById('modal-date-month-year');
+            
+            // Add Post Modal elements
+            const addPostModalOverlay = document.getElementById('add-post-modal-overlay');
+            const addPostModalCloseBtn = document.querySelector('.add-post-modal-close-btn');
+
+            // Login Modal elements
+            const loginModalOverlay = document.getElementById('login-modal-overlay');
+            const loginModalCloseBtn = document.querySelector('.login-modal-close-btn');
+            const loginForm = document.getElementById('login-form');
+            const loginUsernameInput = document.getElementById('login-username');
+            const loginPasswordInput = document.getElementById('login-password');
+            const loginMessage = document.getElementById('login-message');
+
+            // Add User Modal elements
+            const addUserModalOverlay = document.getElementById('add-user-modal-overlay');
+            const addUserModalCloseBtn = document.querySelector('.add-user-modal-close-btn');
+            const addUserForm = document.getElementById('add-user-form');
+            const newUsernameInput = document.getElementById('new-username');
+            const newPasswordInput = document.getElementById('new-password');
+            const addUserMessage = document.getElementById('add-user-message');
+
+            // Color Settings Modal elements
+            const colorSettingsModalOverlay = document.getElementById('color-settings-modal-overlay');
+            const colorSettingsModalCloseBtn = document.querySelector('.color-settings-modal-close-btn');
+            const themeButtons = document.querySelectorAll('.theme-button');
+
+            // --- Global State for Editing ---
+            let editingPostId = null; // Stores the ID of the post being edited, null if adding new
+
+            // --- Authentication and User Management ---
+            const defaultAdmin = { username: 'admin', password: 'admin12345', role: 'admin' };
+            const defaultUser = { username: 'user', password: 'password', role: 'user' };
+            let users = JSON.parse(localStorage.getItem('appUsers')) || [defaultAdmin, defaultUser];
+            let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+            function saveUsers() {
+                localStorage.setItem('appUsers', JSON.stringify(users));
+            }
+
+            function saveCurrentUser() {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+
+            function updateUIBasedOnRole() {
+                console.log('Updating UI based on role. Current user:', currentUser); // Log current user
+                if (currentUser && currentUser.role === 'admin') {
+                    addPostBtn.style.display = 'flex';
+                    addUserBtn.style.display = 'flex';
+                    editRunningTextBtn.style.display = 'flex'; // Show for admin
+                    adminLoginBtnText.textContent = 'Logout (Admin)';
+                    adminLoginBtn.classList.add('admin-logged-in');
+                    // Show edit buttons on existing posts
+                    document.querySelectorAll('.edit-post-btn').forEach(btn => btn.style.display = 'inline-block');
+                } else if (currentUser && currentUser.role === 'user') {
+                    addPostBtn.style.display = 'none';
+                    addUserBtn.style.display = 'none';
+                    editRunningTextBtn.style.display = 'none';
+                    adminLoginBtnText.textContent = 'Logout (User)';
+                    adminLoginBtn.classList.remove('admin-logged-in');
+                    // Hide edit buttons on existing posts
+                    document.querySelectorAll('.edit-post-btn').forEach(btn => btn.style.display = 'none');
+                } else {
+                    addPostBtn.style.display = 'none';
+                    addUserBtn.style.display = 'none';
+                    editRunningTextBtn.style.display = 'none';
+                    adminLoginBtnText.textContent = 'Administrator';
+                    adminLoginBtn.classList.remove('admin-logged-in');
+                    // Hide edit buttons on existing posts
+                    document.querySelectorAll('.edit-post-btn').forEach(btn => btn.style.display = 'none');
+                }
+            }
+
+            adminLoginBtn.addEventListener('click', () => {
+                console.log('Admin Login/Logout button clicked!');
+                if (currentUser) {
+                    currentUser = null;
+                    saveCurrentUser();
+                    updateUIBasedOnRole();
+                    showMessageBox('Berhasil logout!', 'success');
+                } else {
+                    showLoginModal();
+                }
+            });
+
+            loginForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const username = loginUsernameInput.value;
+                const password = loginPasswordInput.value;
+
+                const foundUser = users.find(u => u.username === username && u.password === password);
+
+                if (foundUser) {
+                    currentUser = foundUser;
+                    saveCurrentUser();
+                    updateUIBasedOnRole();
+                    hideModal(loginModalOverlay);
+                    showMessageBox(`Selamat datang, ${currentUser.username}!`, 'success');
+                } else {
+                    loginMessage.textContent = 'Username atau password salah!';
+                    loginMessage.style.color = 'red';
+                }
+            });
+            
+            // Event Listeners for Login Modal Close
+            loginModalCloseBtn.addEventListener('click', () => {
+                hideModal(loginModalOverlay);
+            });
+            loginModalOverlay.addEventListener('click', (event) => {
+                if (event.target === loginModalOverlay) {
+                    hideModal(loginModalOverlay);
+                }
+            });
+
+            addUserForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const newUsername = newUsernameInput.value;
+                const newPassword = newPasswordInput.value;
+
+                if (users.some(u => u.username === newUsername)) {
+                    addUserMessage.textContent = 'Username sudah ada. Pilih username lain.';
+                    addUserMessage.style.color = 'red';
+                    return;
+                }
+
+                users.push({ username: newUsername, password: newPassword, role: 'user' });
+                saveUsers();
+                addUserMessage.textContent = `User '${newUsername}' berhasil ditambahkan!`;
+                addUserMessage.style.color = 'green';
+                addUserForm.reset();
+                setTimeout(() => {
+                    hideModal(addUserModalOverlay);
+                    addUserMessage.textContent = '';
+                }, 1500);
+            });
+
+            addUserBtn.addEventListener('click', () => {
+                console.log('Tambah Anggota User button clicked!');
+                if (currentUser && currentUser.role === 'admin') {
+                    showModal(addUserModalOverlay);
+                } else {
+                    showMessageBox('Anda tidak memiliki izin untuk menambahkan pengguna.', 'error');
+                }
+            });
+
+            // Event Listeners for Add User Modal Close
+            addUserModalCloseBtn.addEventListener('click', () => {
+                hideModal(addUserModalOverlay);
+                addUserMessage.textContent = ''; // Clear message on close
+            });
+            addUserModalOverlay.addEventListener('click', (event) => {
+                if (event.target === addUserModalOverlay) {
+                    hideModal(addUserModalOverlay);
+                    addUserMessage.textContent = ''; // Clear message on close
+                }
+            });
+
+
+            // --- Running Text Management ---
+            let currentRunningText = localStorage.getItem('runningText') || 'PT. Nusantara Project Konsultan | Melayani dengan Profesional dan Terpercaya | Kami Melayani Berbagai Jasa dan Konsultasi';
+
+            function updateRunningTextDisplay() {
+                runningTextContentElement.textContent = currentRunningText;
+                runningTextContentElement.classList.remove('running-text-content');
+                void runningTextContentElement.offsetWidth; // Trigger reflow
+                runningTextContentElement.classList.add('running-text-content');
+            }
+
+            editRunningTextBtn.addEventListener('click', () => {
+                console.log('Edit Teks Berjalan button clicked!');
+                if (currentUser && currentUser.role === 'admin') {
+                    runningTextInput.value = currentRunningText;
+                    showModal(editRunningTextModalOverlay);
+                } else {
+                    showMessageBox('Anda tidak memiliki izin untuk mengedit teks berjalan.', 'error');
+                }
+            });
+
+            editRunningTextForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const newText = runningTextInput.value.trim();
+                if (newText) {
+                    currentRunningText = newText;
+                    localStorage.setItem('runningText', newText);
+                    updateRunningTextDisplay();
+                    editRunningTextMessage.textContent = 'Teks berjalan berhasil diperbarui!';
+                    editRunningTextMessage.style.color = 'green';
+                    setTimeout(() => {
+                        hideModal(editRunningTextModalOverlay);
+                        editRunningTextMessage.textContent = '';
+                    }, 1500);
+                } else {
+                    editRunningTextMessage.textContent = 'Teks berjalan tidak boleh kosong!';
+                    editRunningTextMessage.style.color = 'red';
+                }
+            });
+
+            editRunningTextModalCloseBtn.addEventListener('click', () => {
+                hideModal(editRunningTextModalOverlay);
+                editRunningTextMessage.textContent = '';
+            });
+            editRunningTextModalOverlay.addEventListener('click', (event) => {
+                if (event.target === editRunningTextModalOverlay) {
+                    hideModal(editRunningTextModalOverlay);
+                    editRunningTextMessage.textContent = '';
+                }
+            });
+
+
+            // Helper function to parse Indonesian date strings into a valid Date object
+            function parseIndonesianDate(dateString) {
+                const monthsMap = {
+                    'Januari': 'January', 'Februari': 'February', 'Maret': 'March', 'April': 'April',
+                    'Mei': 'May', 'Juni': 'June', 'Juli': 'July', 'Agustus': 'August',
+                    'September': 'September', 'Oktober': 'October', 'November': 'November', 'Desember': 'December'
+                };
+                if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+                    return new Date(dateString + 'T00:00:00');
+                }
+                const parts = dateString.split(' ');
+                if (parts.length !== 3) {
+                    console.error('Format tanggal tidak valid:', dateString);
+                    return new Date('Invalid Date');
+                }
+                const day = parts[0];
+                const monthIndonesian = parts[1];
+                const year = parts[2];
+                const monthEnglish = monthsMap[monthIndonesian];
+                if (!monthEnglish) {
+                    console.error('Nama bulan Indonesia tidak dikenal:', monthIndonesian);
+                    return new Date('Invalid Date');
+                }
+                const standardDateString = `${monthEnglish} ${day}, ${year}`;
+                return new Date(standardDateString);
+            }
+
+            let blogPosts = JSON.parse(localStorage.getItem('blogPosts')) || [
+                {
+                    title: 'Memulai Perjalanan Belajar Bahasa Pemrograman Baru',
+                    date: '18 Agustus 2025',
+                    category: 'Edukasi',
+                    content: 'Memulai belajar bahasa pemrograman baru adalah petualangan yang menarik dan bermanfaat. Langkah pertama adalah memilih bahasa yang sesuai dengan tujuan Anda. Untuk pengembangan web, HTML, CSS, dan JavaScript adalah fondasi yang tak tergantikan. HTML menyediakan struktur konten, CSS mengatur tampilan dan gaya, sedangkan JavaScript memberikan interaktivitas dinamis pada halaman web Anda.\\n\\nSetelah memilih bahasa, fokuslah pada konsep dasar seperti variabel, tipe data, struktur kontrol (kondisi dan perulangan), serta fungsi. Manfaatkan sumber belajar daring seperti tutorial interaktif, kursus daring (misalnya Coursera, Udemy, Codecademy), dan dokumentasi resmi. Jangan ragu untuk bergabung dengan komunitas daring seperti Stack Overflow atau forum developer untuk bertanya dan berbagi pengalaman.\\n\\nPraktek adalah kunci utama. Mulailah dengan proyek-proyek kecil yang sederhana, seperti membuat kalkulator dasar, daftar tugas, atau halaman profil pribadi. Seiring waktu, tingkatkan kompleksitas proyek Anda. Proyek-proyek ini tidak hanya akan memperkuat pemahaman Anda tetapi juga membangun portofolio yang dapat Anda tunjukkan kepada calon pemberi kerja.\\n\\nIngatlah bahwa belajar pemrograman adalah proses yang berkelanjutan. Dunia teknologi terus berkembang, jadi selalu ada hal baru untuk dipelajari. Nikmati setiap tantangannya, dan jangan takut membuat kesalahan—itu adalah bagian alami dari proses belajar. Konsisten dan teruslah bereksimen, dan Anda akan melihat kemajuan yang signifikan dalam perjalanan pemrograman Anda.'
+                },
+                {
+                    title: '5 Destinasi Wisata Tersembunyi di Indonesia yang Wajib Dikunjungi',
+                    date: '12 Agustus 2025',
+                    category: 'Gaya Hidup',
+                    content: 'Indonesia, dengan ribuan pulau dan kekayaan alamnya, menyimpan banyak surga tersembunyi yang belum banyak terekspos. Jika Anda mencari petualangan yang berbeda dari keramaian turis, berikut adalah 5 destinasi wisata tersembunyi yang wajib Anda kunjungi:\\n\\n1. **Pulau Belitung, Bangka Belitung**: Terkenal dengan formasi batu granit raksasa yang tersebar di pantainya, Belitung menawarkan keindahan pantai berpasir putih dan air laut jernih yang memukau. Kunjungi Pantai Tanjung Tinggi, Pulau Lengkuas dengan mercusuarnya, dan nikmati pesona bawah lautnya yang menawan. Suasana yang tenang dan pemandangan yang instagrammable menjadikan Belitung pilihan tepat untuk melarikan diri dari hiruk pikuk kota.\\n\\n2. **Kepulauan Derawan, Kalimantan Timur**: Gugusan pulau di lepas pantai Kalimantan Timur ini adalah surga bagi para penyelam dan pecinta kehidupan laut. Anda bisa berinteraksi dengan ubur-ubur tak menyengat di Danau Kakaban, berenang bersama penyu di Pulau Sangalaki, atau menjelajahi keindahan terumbu karang yang masih alami. Pesona bawah laut Derawan benar-benar memukau dan akan meninggalkan kesan mendalam.\\n\\n3. **Gunung Kelimutu, Flores, NTT**: Terletak di Ende, Flores, Gunung Kelimutu memiliki keunikan berupa tiga danau kawah dengan warna yang berbeda-beda, yang dapat berubah sewaktu-waktu. Danau Tiwu Ata Bupu (Danau Orang Tua), Tiwu Ko\\\'o Fai Nuwa Muri (Danau Muda-mudi), dan Tiwu Ata Polo (Danau Angker) menawarkan pemandangan magis saat matahari terbit. Perjalanan menuju puncak akan terbayar lunas dengan panorama alam yang luar biasa.\\n\\n4. **Pulau Weh, Aceh**: Terletak di ujung barat Indonesia, Pulau Weh atau Sabang adalah tempat di mana Nol Kilometer Indonesia berada. Pulau ini menawarkan keindahan bawah laut yang spektakuler dengan situs-situs penyelaman kelas dunia, seperti Iboih dan Gapang. Selain itu, Anda bisa bersantai di pantai-pantai yang tenang, menikmati kuliner laut segar, dan merasakan keramahan masyarakat Aceh.\\n\\n5. **Dataran Tinggi Dieng, Jawa Tengah**: Dikenal sebagai \\"Negeri di Atas Awan\\", Dieng menawarkan kombinasi keindahan alam, sejarah, dan budaya. Kunjungi kompleks Candi Arjuna, nikmati keindahan Telaga Warna yang memukau, atau saksikan fenomena golden sunrise dari Sikunir. Suasana dingin pegunungan dan kabut yang sering menyelimuti area ini menciptakan lanskap yang dramatis dan memukau.'
+                },
+                {
+                    title: 'Pentingnya Berpikir Kritis di Era Informasi Digital',
+                    date: '07 Agustus 2025',
+                    category: 'Edukasi',
+                    content: 'Di era digital yang serba cepat ini, informasi mengalir deras dari berbagai sumber, baik yang kredibel maupun yang tidak. Dalam kondisi seperti ini, **kemampuan berpikir kritis** menjadi sangat esensial. Berpikir kritis bukan hanya sekadar menganalisis informasi, melainkan melibatkan proses yang lebih dalam untuk mengevaluasi, menginterpretasi, dan membentuk penilaian yang rasional.\\n\\nSalah satu manfaat utama berpikir kritis adalah membantu kita memfilter informasi. Dengan begitu banyak berita palsu (hoax), disinformasi, dan opini yang menyamar sebagai fakta, kemampuan untuk membedakan mana yang benar dan mana yang menyesatkan adalah krusial. Ini melibatkan kemampuan untuk:\\n\\n* **Mengidentifikasi Bias**: Mengenali apakah ada prasangka atau sudut pandang tertentu yang memengaruhi penyampaian informasi.\\n* **Mengevaluasi Sumber**: Memeriksa kredibilitas dan keandalan sumber informasi, apakah itu media berita, penelitian ilmiah, atau platform media sosial.\\n* **Menganalisis Bukti**: Mempertimbangkan bukti yang disajikan, apakah itu kuat, relevan, dan mendukung klaim yang dibuat.\\n* **Mencari Perspektif Berbeda**: Tidak hanya bergantung pada satu sumber, tetapi mencari beragam pandangan untuk mendapatkan gambaran yang lebih lengkap.\\n\\nSelain itu, berpikir kritis juga meningkatkan kemampuan kita dalam memecahkan masalah. Dengan menganalisis situasi secara objektif dan mempertimbangkan berbagai solusi, kita dapat membuat keputusan yang lebih tepat dan efektif. Ini berlaku tidak hanya dalam konteks akademis atau profesional, tetapi juga dalam kehidupan sehari-hari.\\n\\nMelatih kemampuan berpikir kritis dapat dilakukan dengan berbagai cara, seperti sering bertanya \\"mengapa\\" dan \\"bagaimana\\", membaca dari berbagai sumber, berdiskusi dengan orang lain yang memiliki pandangan berbeda, dan secara aktif mencari kebenhan di balik setiap informasi yang diterima. Dengan demikian, kita dapat menjadi konsumen informasi yang lebih cerdas dan individu yang lebih reflektif dan mandiri dalam berpikir.'
+                },
+                {
+                    title: 'Resep Makanan Sehat untuk Gaya Hidup Modern yang Sibuk',
+                    date: '01 Agustus 2025',
+                    category: 'Gaya Hidup',
+                    content: 'Di tengah kesibukan gaya hidup modern, seringkali kita tergoda untuk memilih makanan cepat saji atau kurang sehat. Namun, menjaga pola makan yang seimbang dan bergizi adalah kunci untuk menjaga energi dan kesehatan secara keseluruhan. Membuat makanan sehat tidak harus rumit atau memakan waktu lama. Berikut adalah beberapa resep sederhana yang cocok untuk Anda yang sibuk:\\n\\n1. **Salad Quinoa dengan Ayam Panggang**: Ini adalah hidangan lengkap yang kaya protein dan serat. Rebus quinoa, panggang dada ayam, lalu campurkan dengan sayuran segar seperti mentimun, tomat ceri, paprika, dan sedikit alpukat. Tambahkan dressing ringan dari minyak zaitun, perasan lemon, dan sedikit bumbu. Resep ini sangat fleksibel dan bisa disiapkan dalam jumlah besar untuk beberapa porsi.\\n\\n2. **Smoothie Bowl Detoks Hijau**: Untuk sarapan cepat dan bergizi, smoothie bowl adalah pilihan yang sempurna. Blender bayam, pisang beku, sepotong kecil jahe, sedikit madu atau kurma, dan susu almond atau air kelapa hingga halus. Tuang ke mangkuk, lalu tambahkan topping seperti chia seed, irisan buah beri, atau granola rendah gula untuk tekstur dan nutrisi tambahan.\\n\\n3. **Pasta Gandum Utuh dengan Pesto Sayuran**: Gunakan pasta gandum utuh sebagai dasar untuk asupan serat yang lebih tinggi. Buat pesto sendiri dari bayam atau kale, kacang mete (pengganti kacang pinus), bawang putih, minyak zaitun, dan sedikit keju parmesan (opsional). Tumis beberapa sayuran seperti brokoli, jamur, dan wortir, lalu campurkan dengan pasta dan pesto. Ini adalah hidangan cepat, lezat, dan penuh nutrisi.\\n\\n4. **Sup Lentil Hangat**: Sup lentil adalah makanan yang menghangatkan, mengenyangkan, dan kaya serat serta protein nabati. Tumis bawang bombay, wortir, dan seledri, lalu tambahkan lentil, kaldu sayuran, dan bumbu seperti jintan, kunyit, dan paprika. Masak hingga lentil empuk. Sup ini bisa disimpan di kulkas dan dipanaskan kembali kapan saja.\\n\\n5. **Telur Dadar Sayuran dengan Roti Gandum**: Sarapan klasik ini sangat mudah disiapkan dan penuh nutrisi. Kocok telur dengan sedikit susu, tambahkan sayuran cincang seperti paprika, bawang bombay, atau jamur. Masak di wajan anti lengket. Sajikan dengan selembar roti gandum utuh yang dipanggang dan irisan alpukat. Ini adalah cara cepat untuk mendapatkan protein dan serat di pagi hari.\\n\\nDengan sedikit perencanaan, makan sehat bisa menjadi bagian mudah dari gaya hidup sibuk Anda. Selamat mencoba!'
+                }
+            ];
+
+            // --- Slider Autoplay and Navigation ---
+            function startSlideShow() {
+                clearInterval(slideInterval);
+                slideInterval = setInterval(() => {
+                    const currentScrollLeft = servicesSliderTrack.scrollLeft;
+                    const scrollWidth = servicesSliderTrack.scrollWidth;
+                    const clientWidth = servicesSliderTrack.clientWidth;
+                    const firstCard = servicesSliderTrack.querySelector('.slider-card');
+                    const cardWidth = firstCard ? firstCard.offsetWidth + 20 : 320;
+
+                    if (currentScrollLeft + clientWidth >= scrollWidth) {
+                        servicesSliderTrack.scrollLeft = 0;
+                    } else {
+                        servicesSliderTrack.scrollLeft += cardWidth;
+                    }
+                }, 3000);
+            }
+
+            function stopSlideShow() {
+                clearInterval(slideInterval);
+            }
+
+            sliderPrevBtn.addEventListener('click', () => {
+                console.log('Slider Prev button clicked!');
+                const firstCard = servicesSliderTrack.querySelector('.slider-card');
+                const cardWidth = firstCard ? firstCard.offsetWidth + 20 : 320;
+                servicesSliderTrack.scrollLeft -= cardWidth;
+                stopSlideShow();
+                startSlideShow();
+            });
+
+            sliderNextBtn.addEventListener('click', () => {
+                console.log('Slider Next button clicked!');
+                const firstCard = servicesSliderTrack.querySelector('.slider-card');
+                const cardWidth = firstCard ? firstCard.offsetWidth + 20 : 320;
+                servicesSliderTrack.scrollLeft += cardWidth;
+                stopSlideShow();
+                startSlideShow();
+            });
+
+            servicesSliderTrack.addEventListener('mouseenter', stopSlideShow);
+            servicesSliderTrack.addEventListener('mouseleave', startSlideShow);
+
+            // --- Real-time Date and Time Update ---
+            function updateDateTime() {
+                const now = new Date();
+                const optionsDate = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
+                const optionsTime = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+                const formattedTime = now.toLocaleTimeString('id-ID', optionsTime);
+                
+                currentDateTimeSpan.textContent = formattedDate;
+                currentTimeSpan.textContent = `${formattedTime} WIB`;
+            }
+
+            // Fungsi untuk menghitung jumlah postingan per kategori
+            function countCategories() {
+                const categoryCounts = {};
+                blogPosts.forEach(post => {
+                    const category = (post.category || 'Lain-lain').trim();
+                    categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+                });
+                return categoryCounts;
+            }
+
+            // Fungsi untuk merender daftar kategori di sidebar
+            function renderCategories() {
+                const counts = countCategories();
+                categoryList.innerHTML = '';
+                for (const category in counts) {
+                    const listItem = document.createElement('li');
+                    listItem.innerHTML = `<a href="#">${category} <span class="category-count">${counts[category]}</span></a>`;
+                    categoryList.appendChild(listItem);
+                }
+            }
+
+            // Fungsi untuk merender postingan ke halaman
+            function renderPosts() {
+                postsContainer.innerHTML = '';
+                
+                blogPosts = blogPosts.map((post, index) => ({ ...post, id: post.id || `post-${Date.now()}-${index}` }));
+
+                blogPosts.forEach(post => {
+                    const postElement = document.createElement('article');
+                    postElement.classList.add('post');
+                    postElement.dataset.postId = post.id;
+
+                    const dateObj = parseIndonesianDate(post.date);
+                    
+                    let displayDay, displayMonthYear, displayDateMeta;
+                    if (isNaN(dateObj.getTime())) {
+                        console.error("Gagal mengurai tanggal untuk postingan:", post.title, post.date);
+                        displayDay = '--';
+                        displayMonthYear = 'Tanggal<br>Tidak Valid';
+                        displayDateMeta = 'Tanggal Tidak Valid';
+                    } else {
+                        displayDay = dateObj.getDate();
+                        displayMonthYear = `${dateObj.toLocaleString('id-ID', { month: 'long' })}<br>${dateObj.getFullYear()}`;
+                        displayDateMeta = post.date;
+                    }
+
+                    const truncatedContent = post.content.substring(0, 200) + (post.content.length > 200 ? '...' : '');
+                    
+                    postElement.innerHTML = `
+                        <div class="post-date-card">
+                            <span class="day">${displayDay}</span>
+                            <span class="month-year">${displayMonthYear}</span>
+                        </div>
+                        <h3>${post.title}</h3>
+                        <div class="post-meta">Dipublikasikan pada ${displayDateMeta}</div>
+                        <p>${truncatedContent}</p>
+                        <div class="post-actions">
+                            ${post.content.length > 200 ? `<button class="read-more-btn" data-post-id="${post.id}">Baca Selengkapnya</button>` : ''}
+                            <button class="edit-post-btn" data-post-id="${post.id}" style="display: ${currentUser && currentUser.role === 'admin' ? 'inline-block' : 'none'};">Edit Postingan</button>
+                        </div>
+                    `;
+                    
+                    postsContainer.appendChild(postElement);
+                });
+
+                // Attach event listeners for Read More buttons
+                document.querySelectorAll('.read-more-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const postId = event.target.dataset.postId;
+                        const post = blogPosts.find(p => p.id === postId);
+                        if (post) {
+                            showPostModal(post);
+                        }
+                    });
+                });
+
+                // Attach event listeners for Edit Post buttons
+                document.querySelectorAll('.edit-post-btn').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const postId = event.target.dataset.postId;
+                        const post = blogPosts.find(p => p.id === postId);
+                        if (post) {
+                            showEditPostModal(post);
+                        }
+                    });
+                });
+
+                renderCategories();
+                updateUIBasedOnRole(); // Ensure edit buttons visibility is correct after rendering
+            }
+
+            function showPostModal(post) {
+                modalPostTitle.textContent = post.title;
+                modalPostContent.textContent = post.content;
+
+                const dateObj = parseIndonesianDate(post.date);
+
+                if (isNaN(dateObj.getTime())) {
+                    modalDateDay.textContent = '--';
+                    modalDateMonthYear.textContent = 'Tanggal\nTidak Valid';
+                    modalPostMeta.textContent = `Dipublikasikan pada Tanggal Tidak Valid`;
+                } else {
+                    modalDateDay.textContent = dateObj.getDate();
+                    modalDateMonthYear.textContent = `${dateObj.toLocaleString('id-ID', { month: 'long' })} ${dateObj.getFullYear()}`;
+                    modalPostMeta.textContent = `Dipublikasikan pada ${post.date}`;
+                }
+                modalPostCategory.textContent = `Kategori: ${post.category || 'Lain-lain'}`;
+
+                showModal(postModal);
+            }
+
+            function hidePostModal() {
+                hideModal(postModal);
+            }
+
+            postModalCloseBtn.addEventListener('click', hidePostModal);
+            postModal.addEventListener('click', (event) => {
+                if (event.target === postModal) {
+                    hideModal(postModal);
+                }
+            });
+
+            function showAddPostModal() {
+                editingPostId = null; // Reset editing state
+                postFormTitle.textContent = 'Buat Postingan Baru';
+                postFormSubmitBtn.textContent = 'Publikasikan Postingan';
+                postFormMessage.textContent = ''; // Clear any previous message
+                postForm.reset();
+                const today = new Date();
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                postDateInput.value = `${year}-${month}-${day}`;
+                showModal(addPostModalOverlay);
+            }
+
+            function showEditPostModal(post) {
+                editingPostId = post.id; // Set editing state
+                postFormTitle.textContent = 'Edit Postingan';
+                postFormSubmitBtn.textContent = 'Simpan Perubahan';
+                postFormMessage.textContent = ''; // Clear any previous message
+
+                postTitleInput.value = post.title;
+                postContentInput.value = post.content;
+                postCategoryInput.value = post.category || '';
+
+                // Convert Indonesian date string to YYYY-MM-DD for date input
+                const dateObj = parseIndonesianDate(post.date);
+                if (!isNaN(dateObj.getTime())) {
+                    const year = dateObj.getFullYear();
+                    const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                    const day = String(dateObj.getDate()).padStart(2, '0');
+                    postDateInput.value = `${year}-${month}-${day}`;
+                } else {
+                    postDateInput.value = ''; // Clear if date is invalid
+                }
+                
+                showModal(addPostModalOverlay);
+            }
+
+            function hideAddPostModal() {
+                hideModal(addPostModalOverlay);
+                postForm.reset();
+                editingPostId = null; // Clear editing state after closing
+            }
+
+            addPostBtn.addEventListener('click', showAddPostModal);
+
+            addPostModalCloseBtn.addEventListener('click', hideAddPostModal);
+            addPostModalOverlay.addEventListener('click', (event) => {
+                if (event.target === addPostModalOverlay) {
+                    hideAddPostModal();
+                }
+            });
+
+            postForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                
+                const title = postTitleInput.value.trim();
+                const content = postContentInput.value.trim();
+                const rawDate = postDateInput.value;
+                const category = postCategoryInput.value.trim() || 'Lain-lain';
+
+                let postDateString;
+                if (rawDate) {
+                    const tempDate = new Date(rawDate + 'T00:00:00');
+                    if (!isNaN(tempDate.getTime())) {
+                        postDateString = tempDate.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                    } else {
+                        postDateString = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                    }
+                } else {
+                    postDateString = new Date().toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                }
+
+                if (title && content) {
+                    if (editingPostId) {
+                        // Edit existing post
+                        const postIndex = blogPosts.findIndex(p => p.id === editingPostId);
+                        if (postIndex !== -1) {
+                            blogPosts[postIndex].title = title;
+                            blogPosts[postIndex].content = content;
+                            blogPosts[postIndex].date = postDateString;
+                            blogPosts[postIndex].category = category;
+                            postFormMessage.textContent = 'Postingan berhasil diperbarui!';
+                            postFormMessage.style.color = 'green';
+                        }
+                    } else {
+                        // Add new post
+                        const newPost = {
+                            id: `post-${Date.now()}`,
+                            title: title,
+                            date: postDateString,
+                            category: category,
+                            content: content
+                        };
+                        blogPosts.unshift(newPost);
+                        postFormMessage.textContent = 'Postingan berhasil dipublikasikan!';
+                        postFormMessage.style.color = 'green';
+                    }
+                    
+                    localStorage.setItem('blogPosts', JSON.stringify(blogPosts));
+                    renderPosts();
+                    
+                    setTimeout(() => {
+                        hideAddPostModal();
+                        postsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 1500); // Hide after a short delay
+                } else {
+                    postFormMessage.textContent = 'Harap lengkapi semua bidang (judul dan konten) untuk postingan Anda.';
+                    postFormMessage.style.color = 'red';
+                }
+            });
+
+            let currentLayout = 'standard';
+            layoutToggleButton.addEventListener('click', () => {
+                console.log('Ubah Tata Letak button clicked!');
+                if (currentLayout === 'standard') {
+                    setLayout('wide');
+                    currentLayout = 'wide';
+                    layoutBtnText.textContent = 'Layout Standar';
+                } else {
+                    setLayout('standard');
+                    currentLayout = 'standard';
+                    layoutBtnText.textContent = 'Layout Lebar';
+                }
+            });
+
+            function setLayout(layoutType) {
+                if (layoutType === 'standard') {
+                    postsContainer.classList.remove('layout-wide');
+                    postsContainer.classList.add('layout-standard');
+                    asideSection.classList.remove('layout-wide');
+                    asideSection.classList.add('layout-standard');
+                    asideSection.style.display = 'flex';
+                } else if (layoutType === 'wide') {
+                    postsContainer.classList.remove('layout-standard');
+                    postsContainer.classList.add('layout-wide');
+                    asideSection.classList.remove('layout-standard');
+                    asideSection.classList.add('layout-wide');
+                }
+            }
+
+            const themes = {
+                default: {
+                    '--primary-color': '#007bff', '--secondary-color': '#6c757d', '--background-color': '#f8f9fa',
+                    '--text-color': '#212529', '--header-bg-start': '#0056b3', '--header-bg-end': '#007bff',
+                    '--card-base-bg': '#fff', '--post-border-color': '#e9ecef', '--post-meta-border-color': '#dee2e6',
+                    '--jasa-card-h3-border-color': 'rgba(0,0,0,0.1)', '--footer-bg': '#343a40', '--footer-text-color': '#e9ecef',
+                    '--slider-card-1-bg': '#e6f7ff', '--slider-card-2-bg': '#e6ffe6', '--slider-card-3-bg': '#fffbe6',
+                    '--slider-card-4-bg': '#f2e6ff', '--slider-card-5-bg': '#ffe6f2', '--slider-card-6-bg': '#e0f2f7',
+                    '--slider-card-7-bg': '#f0fff0', '--slider-card-8-bg': '#fff0e0', '--slider-card-9-bg': '#e6e6fa'
+                },
+                dark: {
+                    '--primary-color': '#6f42c1', '--secondary-color': '#adb5bd', '--background-color': '#212529',
+                    '--text-color': '#f8f9fa', '--header-bg-start': '#343a40', '--header-bg-end': '#495057',
+                    '--card-base-bg': '#2c3034', '--post-border-color': '#495057', '--post-meta-border-color': '#6c757d',
+                    '--jasa-card-h3-border-color': 'rgba(255,255,255,0.2)', '--footer-bg': '#1a1d20', '--footer-text-color': '#ced4da',
+                    '--slider-card-1-bg': '#4a505c', '--slider-card-2-bg': '#5c4a50', '--slider-card-3-bg': '#4a5c50',
+                    '--slider-card-4-bg': '#504a5c', '--slider-card-5-bg': '#5c504a', '--slider-card-6-bg': '#4a5c5c',
+                    '--slider-card-7-bg': '#5c4a4a', '--slider-card-8-bg': '#4a4a5c', '--slider-card-9-bg': '#505c4a'
+                },
+                green: {
+                    '--primary-color': '#28a745', '--secondary-color': '#6c757d', '--background-color': '#e9ffe9',
+                    '--text-color': '#2f4f4f', '--header-bg-start': '#1e7e34', '--header-bg-end': '#28a745',
+                    '--card-base-bg': '#f3fff3', '--post-border-color': '#c3e6cb', '--post-meta-border-color': '#88b894',
+                    '--jasa-card-h3-border-color': 'rgba(0,0,0,0.1)', '--footer-bg': '#1e7e34', '--footer-text-color': '#e9ffe9',
+                    '--slider-card-1-bg': '#f0fff0', '--slider-card-2-bg': '#e0ffe0', '--slider-card-3-bg': '#d0ffb0',
+                    '--slider-card-4-bg': '#c0ff90', '--slider-card-5-bg': '#b0ff80', '--slider-card-6-bg': '#a0ff70',
+                    '--slider-card-7-bg': '#90ff60', '--slider-card-8-bg': '#80ff50', '--slider-card-9-bg': '#70ff40'
+                },
+                purple: {
+                    '--primary-color': '#6f42c1', '--secondary-color': '#adb5bd', '--background-color': '#f8f0ff',
+                    '--text-color': '#3a0050', '--header-bg-start': '#563d7c', '--header-bg-end': '#6f42c1',
+                    '--card-base-bg': '#fcf5ff', '--post-border-color': '#dcbefc', '--post-meta-border-color': '#a785da',
+                    '--jasa-card-h3-border-color': 'rgba(0,0,0,0.1)', '--footer-bg': '#4b2e7c', '--footer-text-color': '#f8f0ff',
+                    '--slider-card-1-bg': '#f2e6ff', '--slider-card-2-bg': '#f7e0ff', '--slider-card-3-bg': '#fcedff',
+                    '--slider-card-4-bg': '#fae6ff', '--slider-card-5-bg': '#fff0ff', '--slider-card-6-bg': '#ffe6ff',
+                    '--slider-card-7-bg': '#fcf2ff', '--slider-card-8-bg': '#e9d6ff', '--slider-card-9-bg': '#e0c0ff'
+                }
+            };
+
+            function applyTheme(themeName) {
+                const theme = themes[themeName];
+                for (const property in theme) {
+                    document.documentElement.style.setProperty(property, theme[property]);
+                }
+                localStorage.setItem('selectedTheme', themeName);
+            }
+
+            const savedTheme = localStorage.getItem('selectedTheme') || 'default';
+            applyTheme(savedTheme);
+
+            function showColorSettingsModal() {
+                console.log('Pengaturan Warna button clicked!');
+                showModal(colorSettingsModalOverlay);
+            }
+
+            function hideColorSettingsModal() {
+                hideModal(colorSettingsModalOverlay);
+            }
+
+            colorSettingsBtn.addEventListener('click', showColorSettingsModal);
+            colorSettingsModalCloseBtn.addEventListener('click', hideColorSettingsModal);
+            colorSettingsModalOverlay.addEventListener('click', (event) => {
+                if (event.target === colorSettingsModalOverlay) {
+                    hideColorSettingsModal();
+                }
+            });
+
+            themeButtons.forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const themeName = event.target.dataset.theme;
+                    applyTheme(themeName);
+                    renderPosts();
+                    hideColorSettingsModal();
+                });
+            });
+
+            // Initial calls
+            renderPosts();
+            setLayout(currentLayout);
+            layoutBtnText.textContent = currentLayout === 'standard' ? 'Layout Lebar' : 'Layout Standar';
+            updateUIBasedOnRole();
+            startSlideShow();
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+            updateRunningTextDisplay(); // Initial display of running text
+        } catch (error) {
+            console.error("An error occurred during script initialization:", error);
+            // Menampilkan pesan yang lebih ramah pengguna jika ada kesalahan fatal
+            showMessageBox("Terjadi kesalahan saat memuat aplikasi. Silakan coba lagi. Lihat konsol browser untuk detail.", "error");
+        }
+    });
+</script>
 </body>
 </html>
